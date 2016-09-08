@@ -60,6 +60,7 @@ form = """
 </form>
 """
 
+# syntax of regex formulas: if parameter matches this regex variable, return True
 # regex for username, password, and email validation:
 # username:
 USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
@@ -74,13 +75,8 @@ def valid_password(password):
 # email:
 EMAIL_RE = re.compile(r"^[\S]+@[\S]+.[\S]+$")
 def valid_email(email):
-    return EMAIL_RE.match(email)
-
-
-# input validation:
-#validU = valid_username(self.request.get('username'))
-#validP = valid_password(self.request.get('password'))
-#validE = valid_email(self.request.get('email'))
+    if email == "": return True
+    else: return EMAIL_RE.match(email)
 
 
 class MainHandler(webapp2.RequestHandler):
@@ -96,40 +92,32 @@ class MainHandler(webapp2.RequestHandler):
                   "errAllE" : ""}
         self.response.write(form % dictin)
 
-        # input validation:
-        validU = valid_username(self.request.get('username'))
-        validP = valid_password(self.request.get('password'))
-        validE = {valid_email(self.request.get('email')), ""}  ###### this allows any string without proper formatting
-#        blankE = ""
-
-        # if email is blank:
-#        if self.request.get('email') == "":
-#            blankE = ""
-#        else: blankE = validE
-
     def error_check(self):
+            # escape_html: (only needed for username and email - preserved input values)
+            #  if you use escape_html for password/verify, the values may be changed
+            username2 = cgi.escape(self.request.get('username'), quote=True)
+#            password2 = cgi.escape(self.request.get('password'), quote=True)
+#            verify2 = cgi.escape(self.request.get('verify'), quote=True)
+            email2 = cgi.escape(self.request.get('email'), quote=True)
+
+            # input validation:
+            validU = valid_username(username2)
+            validP = valid_password(self.request.get('password'))
+            validE = valid_email(email2)
+#            validE = None
+#            validE = {valid_email(email2), ""} ##### this allows any string to be valid!
+
             # error key:
             UerrM = "Username not valid."
             PerrM = "Password not valid."
             VPerrM = "Passwords do not match."
             EmerrM = "Email not valid."
-            AerrUM = "Valid usernames have 3 - 20 characters and no spaces."
+            AerrUM = "Valid usernames have 3 - 20 characters, no special characters, and no spaces."
             AerrPM = "Valid passwords have 3 - 20 characters."
-            AerrEM = "Valid emails match this formatting: name@domain.com"
+            AerrEM = "Valid emails must match this formatting: name@domain.com"
 
             # defaults error key:
             Noerr = ""
-
-            # input validation:
-            validU = valid_username(self.request.get('username'))
-            validP = valid_password(self.request.get('password'))
-            validE = {valid_email(self.request.get('email')), ""}
-#            blankE = ""
-
-        # if email is blank:
-#        if self.request.get('email') == "":
-#            blankE = ""
-#        else: blankE = validE
 
             # error-checking for Username:
             if not validU: errU = UerrM
@@ -159,17 +147,14 @@ class MainHandler(webapp2.RequestHandler):
             else: errAllE = Noerr
 
             # error-checking for blank Email, if blankE does not equal validE:
-
-
-
 #            if blankE != validE: errE = Noerr
 #            else: errE = Noerr
 #            if blankE != validE: errAllE = Noerr
 #            else: errAllE = Noerr
 
             # dict:
-            dictout = {"unstr" : self.request.get('username'),
-                       "emstr" : self.request.get('email'),
+            dictout = {"unstr" : username2,
+                       "emstr" : email2,
                        "errU" : errU,
                        "errP" : errP,
                        "errVP" : errVP,
@@ -181,11 +166,26 @@ class MainHandler(webapp2.RequestHandler):
             self.response.write(form % dictout)
 
     def post(self):
+        # escape_html: (only needed for username and email - preserved input values)
+        #  if you use escape_html for password/verify, the values may be changed
+        username2 = cgi.escape(self.request.get('username'), quote=True)
+#        password2 = cgi.escape(self.request.get('password'), quote=True)
+#        verify2 = cgi.escape(self.request.get('verify'), quote=True)
+        email2 = cgi.escape(self.request.get('email'), quote=True)
 
         # input validation:
-        validU = valid_username(self.request.get('username'))
+        validU = valid_username(username2)
         validP = valid_password(self.request.get('password'))
-        validE = {valid_email(self.request.get('email')), ""}
+        validE = valid_email(email2)
+#        validE = None
+#        validE = {valid_email(email2), ""} ##### this allows any string to be valid!
+
+
+        # if email is blank:
+#        if self.request.get('email') == "":
+#            self.request.get('email') = validE
+#        else:
+#            blankE = ""
 
         # if email is blank:
 #        if self.request.get('email') == "":
